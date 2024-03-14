@@ -10,6 +10,7 @@ Authors@R:
 Description: Lecture notes for Epi 204 @ UC Davis
 Encoding: UTF-8
 Imports: 
+    arsenal,
     conflicted,
     cvTools,
     dobson,
@@ -19,6 +20,7 @@ Imports:
     ggeasy,
     ggfortify,
     ggplot2,
+    glmx,
     haven,
     kableExtra,
     KMsurv,
