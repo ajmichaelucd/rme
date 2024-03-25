@@ -10,13 +10,10 @@ Authors@R:
 Description: Lecture notes for Epi 204 @ UC Davis
 Encoding: UTF-8
 Imports: 
-<<<<<<< HEAD
     arsenal,
-=======
     fs
 Suggests: 
     tidyverse,
->>>>>>> upstream/main
     conflicted,
     cvTools,
     dobson,
@@ -35,7 +32,6 @@ Suggests:
     parameters,
     plotly,
     printr,
-    rme,
     survminer,
     tidyr
 RoxygenNote: 7.2.3
