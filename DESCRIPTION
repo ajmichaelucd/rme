@@ -30,6 +30,7 @@ Imports:
     parameters,
     plotly,
     printr,
+    rme,
     survminer,
     tidyr
 Suggests: 
