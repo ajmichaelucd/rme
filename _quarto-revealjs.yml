@@ -16,12 +16,16 @@ project:
 format:
   revealjs:
     theme: dark
+    embed-resources: true
     fig-cap-location: top
     html-math-method: mathjax
     smaller: false
     number-sections: true
+    progress: true
+    incremental: false
     number-depth: 2
     slide-number: true
+    shift-heading-level-by: -1
     slide-level: 2
     scrollable: true
     echo: true
@@ -29,7 +33,7 @@ format:
     code-link: true
     code-summary: "[R code]"
     # code-overflow: scroll
-    auto-stretch: true
+    auto-stretch: false
     # out-width: "50%"
     fig-height: 3
     fig-width: 7
@@ -38,5 +42,5 @@ format:
 execute:
   warning: false
   message: false
-  cache: true
+  cache: false
   freeze: auto  # re-render only when source changes
