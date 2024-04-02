@@ -1,0 +1,411 @@
+---
+title: "class_package_repository_setup"
+format: 
+  html:
+    toc: true
+    number-sections: true
+    fig-cap-location: top
+    tbl-cap-location: top
+  revealjs:
+    number-sections: true
+    auto-stretch: true
+    slide-number: true
+    slide-level: 2
+    scrollable: true
+    html-math-method: mathjax
+    fig-cap-location: top
+    tbl-cap-location: top
+editor: visual
+bibliography: references.bib
+execute:
+  cache: true
+  freeze: auto 
+---
+
+# Getting Started
+
+## Updating R
+
+Is your R up to date? Let's find out. Pull up R and run:
+`getRversion()`. You should get something like this:
+
+```{r}
+getRversion()
+```
+
+If your version started with a three, it's definitely time for an
+update, depending on your OS we probably want to be running 4.2.x or
+4.3.x. My Mac is still running 10.15, so I'm using 4.2.3 at the moment.
+
+You can also navigate to the terminal window in RStudio or open a
+terminal window and type `R --version`. If you just wondered what
+RStudio is, let's get that set up next
+
+## RStudio
+
+If you haven't used RStudio before, it's a very helpful Integrated
+Development Environment (IDE) that we can use to run R with much more
+information visible to us and can make navigation, version control, and
+other tasks much easier and quicker.
+
+If you don't have it, navigate to this site to download it:
+<https://posit.co/download/rstudio-desktop/>
+
+![RStudio
+Example](images/Screen%20Shot%202024-03-26%20at%2012.45.15%20AM.png){fig-alt="Remaining text in this section should cover everything in this image"}
+
+In the top left, we have a place to edit our scripts, here we can write
+code then run it after.
+
+In the bottom left is the R console, if we run code from a script, it
+runs in the console; many outputs also show up in the console, including
+any printed output of code as well as errors and warnings. We can also
+run code directly in the console. There is a second tab in the bottom
+left labeled Terminal that lets us run code in the terminal for our
+computer if needed as well.
+
+In the top right, we have a few tabs that can be helpful. Environment
+will show variables, data frames, lists, and other objects we create.
+History shows the history of what has been run in the console. We'll
+discuss the Build tab later, and you may not have a Git tab yet, but you
+hopefully will by the end of the day.
+
+In the bottom right, we have several other useful tools available to us.
+Files allows us to navigate through directories, as well as open and
+move files. Plots is where any plots we generate with the code we run
+will show up. Packages lists all of the packages you have installed, as
+well as their version numbers, and whether they are loaded in or not.
+Help is where we can examine documentation for functions, as well as
+some more general help tools available on the home page. Viewer and
+Presentation we'll discuss later, they're for viewing documents and
+slides we create as markdown or quarto files.
+
+## Github
+
+Github is a platform for developing software, and for our purposes,
+allows us to do version control and collaboration remotely. What does
+that mean? We'll use it to save our work remotely, keep track of
+changes, and allow us to access our code from multiple computers if need
+be.
+
+If you don't have a github account, take a few moments to make one now.
+
+## Setting Up an R Package Locally
+
+First, we install some packages we'll need
+
+```{r}
+#| eval: false
+install.packages("devtools")
+install.packages("roxygen2")
+install.packages("usethis")
+```
+
+Then we load in devtools
+
+```{r}
+library(devtools)
+```
+
+```{r}
+#| eval: false
+use_devtools()
+```
+
+And we'll use this to create a new package named epi204. You can name
+the package something a bit different if you would like
+
+```{r}
+#| eval: false
+create_package("~/path/to/epi204")
+```
+
+Notes:
+
+-   Don't place the package inside another R package, another RStudio
+    project, a different Git repo, or your R package library
+-   Note that the package will be a directory (folder) with the name you
+    give it here (e.g. epi_204), so you don't need to create a directory
+    to place the package in.
+
+A new R session should appear, opened to your new package. You can check
+this in the top right corner, where you can switch between various
+projects and packages you are working on.
+
+![](images/Screen%20Shot%202024-03-26%20at%2012.45.15%20AM%20copy.png)
+
+## What's In an R Package
+
+Here's an except from "R Packages" by Hadley Wickham and Jennifer Bryan
+regarding a new package named `regexcite`. We'll end up adding some more
+directories to the package for some other file types.
+
+> -   `.Rbuildignore` lists files that we need to have around but that
+>     should not be included when building the R package from source. If
+>     you aren't using
+>     RStudio, [`create_package()`](https://usethis.r-lib.org/reference/create_package.html) may
+>     not create this file (nor `.gitignore`) at first, since there's no
+>     RStudio-related machinery that needs to be ignored. However, you
+>     will likely develop the need for `.Rbuildignore` at some point,
+>     regardless of what editor you are using. It is discussed in more
+>     detail in [Section
+>     3.3.1](https://r-pkgs.org/structure.html#sec-rbuildignore).
+>
+> -   `.Rproj.user`, if you have it, is a directory used internally by
+>     RStudio.
+>
+> -   `.gitignore` anticipates Git usage and tells Git to ignore some
+>     standard, behind-the-scenes files created by R and RStudio. Even
+>     if you do not plan to use Git, this is harmless.
+>
+> -   `DESCRIPTION` provides metadata about your package. We edit this
+>     shortly and [Chapter
+>     9](https://r-pkgs.org/description.html) covers the general topic
+>     of the `DESCRIPTION` file.
+>
+> -   `NAMESPACE` declares the functions your package exports for
+>     external use and the external functions your package imports from
+>     other packages. At this point, it is empty, except for a comment
+>     declaring that this is a file you should not edit by hand.
+>
+> -   The `R/` directory is the "business end" of your package. It will
+>     soon contain `.R` files with function definitions.
+>
+> -   `regexcite.Rproj` is the file that makes this directory an RStudio
+>     Project. Even if you don't use RStudio, this file is harmless. Or
+>     you can suppress its creation
+>     with `create_package(..., rstudio = FALSE)`.
+
+Note that some of these files that begin with `.` likely won't be
+visible unless you click on the More section of the Files tab in the
+Output pane.
+
+![](images/Screen%20Shot%202024-03-26%20at%207.40.14%20PM.png)
+
+## Set Up a Git Repository
+
+Ever wish you could try something out in a bunch of your code without
+being stuck with all those changes? Git is a tool for version control.
+It lets us track changes we make to our code, make branching versions of
+our package where we can try out new approaches without needing to make
+a whole bunch of copies of files, and much more.
+
+Click to the Terminal tab in the Console section of RStudio, enter:
+`git version`
+
+Most Macs come with git already installed. If there is a version, you
+have git already. If not, let's get git.
+
+Searching "Git Guides Github" should get you to the Git Guide Github
+page at https://github.com/git-guides. From here just click on the
+Install tab near the top and install the correct version for your OS.
+
+Once `git version` returns an actual version number, run the following
+to create a Git repository
+
+```{r eval = FALSE}
+use_git()
+```
+
+If this throws an error about a user.name not being found, that's okay,
+we need to set a name for Git to know us by. See [this
+article](https://docs.github.com/en/get-started/getting-started-with-git/setting-your-username-in-git)
+for more details. Open terminal and enter one of the following depending
+on whether you want to set a name for this repository or for all
+repositories on your computer. This username DOES NOT NEED TO MATCH YOUR
+GITHUB USERNAME.
+
+For this repository, run the following in the terminal:
+
+    git config user.name "yournamehere"
+
+For all repositories on your computer, run the following in the
+terminal:
+
+    git config --global user.name "yournamehere"
+
+We'll need to do this for user.email too, but THIS EMAIL MUST MATCH ONE
+OF THE ONES ASSOCIATED WITH YOUR GITHUB ACCOUNT.
+
+For this repository, run the following in the terminal:
+
+    git config user.email "youremailhere"
+
+For all repositories on your computer, run the following in the
+terminal:
+
+    git config --global user.email "youremailhere"
+
+Then we can run `use_git()` on the R console again to create our git
+repository.
+
+### Using Git/Github
+
+Commit, Push
+
+## Adding some stuff to the package
+
+### Quarto
+
+From the menu bar use File\>New File\>Quarto Document. Name the file
+something like: `hw0.qmd` or `test.qmd`.
+
+![](images/Screen%20Shot%202024-03-28%20at%203.38.17%20PM.png)
+
+If you're familiar with R markdown, think of Quarto as a version of that
+with more tools at your disposal. You can use languages other than R in
+Quarto and Quarto has many more output formats available.
+
+#### Headers
+
+The header might start like this:
+
+![](images/Screen%20Shot%202024-03-30%20at%208.01.28%20PM.png){width="2.56in"}
+
+And we might put something like this:
+
+![](images/Screen%20Shot%202024-03-30%20at%208.10.40%20PM.png){width="3.09in"}
+
+So what do these mean?
+
+-   title: pretty self-explanatory, put it in quotes
+
+-   author: We can put author or authors here
+
+-   format: in the original format, you can specify an output formal
+    such as html, pdf, revealjs (slides), etc
+
+    -   However we have a few neat things we can do. By putting the
+        format in another line, we can assign settings for the whole
+        document. We can even list two outputs with completely different
+        settings (above we do html and revealjs), then later decide
+        which one we want to Render
+
+-   toc: include an automatically-generated table of contents in the
+    output document
+
+-   number-section: add numbers to sections
+
+-   slide-number: add numbers to the slides
+
+-   slide-level: What level of header is used to break apart slides.
+
+-   scrollable: makes it so individuals slides can be scrolled if there
+    is more information in one section than would fit on a slide
+
+#### The document
+
+Quarto allows us to insert sections of code, code output, text,
+mathematical notation, images, tables, and more into a document, making
+it one way you can show your code, your results, and discuss your
+answers all in one document. On a mac, you can add a code chunk with
+`⌥⌘ I`, if the code generates output such as a plot or text it will
+appear in the document.
+
+Let's try to add a plot here:
+
+```{r}
+#| message: false
+library(tidyverse)
+library(palmerpenguins)
+library(ggthemes)
+```
+
+```{r}
+#| label: fig-Penguin-Plot-1
+#| fig-cap: "This is an example of a caption for the Penguin Plot of Flipper Length and Body Mass by Species"
+#| warning: false
+#| message: false
+penguins %>% 
+  ggplot(aes(x = flipper_length_mm, y = body_mass_g)) +
+  geom_point(aes(color = species, shape = species)) +
+  geom_smooth(method = "lm") +
+  labs(
+    x = "Flipper length (mm)", y = "Body mass (g)",
+    color = "Species", shape = "Species"
+  ) +
+  scale_color_colorblind()
+```
+
+Now let's look at how we generated the caption for our plot, we did not
+use ggtitle() or labs() because we want Quarto to add the "Figure 1" for
+us.
+
+![](images/Screen%20Shot%202024-03-31%20at%209.18.35%20AM-01.png)
+
+We can add some settings for the chunk by using #\| and then the setting
+we want to change. `#| label:` creates a label for the code chunk, it's
+helpful for keeping things organized on our side. `#| fig-cap` lets us
+create a caption for the figure and fig-cap-location in our document
+settings puts it above the figure. You can also put the caption below
+the figure and add a title with `ggtitle()` or `labs(title = )`
+
+```{r}
+#| label: tbl-Penguin-Table-1
+#| tbl-cap: "Here's an example table"
+#| warning: false
+#| message: false
+head(penguins) %>% select(1:4) %>% pander::pander()
+```
+
+### Functions
+
+Writing our own functions allows us to reduce how often we copy/paste
+the same code.
+
+```{r}
+get_coefficients = function(df, formula){
+  regression = 
+    df %>% 
+      lm(formula, data = .)
+  coefs = regression$coefficients
+  return(coefs)
+}
+
+get_coefficients(penguins, body_mass_g ~ flipper_length_mm)
+
+```
+
+Once we've written a function like this, we can make that function part
+of our project by using:
+
+```{r}
+#| eval: false
+use_r("get_coefficients")
+```
+
+Which opens a .R file with the name provided in the command. We can then
+paste our function into this .R file
+
+To create documentation for the function (the stuff that pops up when
+you run ?functionname() ), you just need to place your cursor in the
+function somewhere, then click Code \> Insert Roxygen Skeleton.
+
+![](images/Screen%20Shot%202024-04-01%20at%205.14.53%20PM-04.png){width="4in"}
+
+Details on Roxygen and function documentation can be found in Chapter 16
+of 'R Packages' by @wickham2023r.
+
+Once you've created a function and set up the Roxygen skeleton, you can
+use `document()` to create and update the documentation as well as load
+your functions again. Similarly, `load_all` can be used to load your
+functions after any changes have been made without remaking the
+documentation.
+
+### Mathematical Notation
+
+Mathematical Notation can be added in line using single dollar signs
+around the math you wish to add written in LaTeX. For instance $\pi r^2$
+is written as `$\pi r^2$`. To write mathematical notation in a separate
+line, use double dollar signs around each:
+
+$$
+\ell = \sum_{i=1}^{n}{\log{p(l_i,r_i|t_i)}}
+$$ is just:
+
+![](images/Screen%20Shot%202024-04-01%20at%208.41.49%20PM.png){fig-alt="$$ \\ell = \\sum_{i=1}^{n}{\\log{p(l_i,r_i|t_i)}} $$"
+width="3.84in"}
+
+[Here](https://www.cmor-faculty.rice.edu/~heinken/latex/symbols.pdf) is
+a helpful guide to how to write a lot of different things you might need
+in LaTeX.
