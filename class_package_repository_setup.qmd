@@ -105,6 +105,8 @@ Then we load in devtools
 
 ```{r}
 library(devtools)
+library(usethis)
+library(roxygen2)
 ```
 
 ```{r}
@@ -136,45 +138,44 @@ projects and packages you are working on.
 
 ## What's In an R Package
 
-Here's an except from "R Packages" by Hadley Wickham and Jennifer Bryan
-regarding a new package named `regexcite`. We'll end up adding some more
-directories to the package for some other file types.
+Here's an except from "R Packages", @wickham2023r, regarding a new
+package they are creating named `regexcite`. We'll end up adding some
+more directories to the package for some other file types.
 
-> -   `.Rbuildignore` lists files that we need to have around but that
+> -   `.Rbuildignore` lists files that we need to have around but that
 >     should not be included when building the R package from source. If
->     you aren't using
->     RStudio, [`create_package()`](https://usethis.r-lib.org/reference/create_package.html) may
->     not create this file (nor `.gitignore`) at first, since there's no
->     RStudio-related machinery that needs to be ignored. However, you
->     will likely develop the need for `.Rbuildignore` at some point,
->     regardless of what editor you are using. It is discussed in more
->     detail in [Section
+>     you aren't using RStudio,
+>     [`create_package()`](https://usethis.r-lib.org/reference/create_package.html)
+>     may not create this file (nor `.gitignore`) at first, since
+>     there's no RStudio-related machinery that needs to be ignored.
+>     However, you will likely develop the need for `.Rbuildignore` at
+>     some point, regardless of what editor you are using. It is
+>     discussed in more detail in [Section
 >     3.3.1](https://r-pkgs.org/structure.html#sec-rbuildignore).
 >
 > -   `.Rproj.user`, if you have it, is a directory used internally by
 >     RStudio.
 >
-> -   `.gitignore` anticipates Git usage and tells Git to ignore some
+> -   `.gitignore` anticipates Git usage and tells Git to ignore some
 >     standard, behind-the-scenes files created by R and RStudio. Even
 >     if you do not plan to use Git, this is harmless.
 >
-> -   `DESCRIPTION` provides metadata about your package. We edit this
->     shortly and [Chapter
->     9](https://r-pkgs.org/description.html) covers the general topic
->     of the `DESCRIPTION` file.
+> -   `DESCRIPTION` provides metadata about your package. We edit this
+>     shortly and [Chapter 9](https://r-pkgs.org/description.html)
+>     covers the general topic of the `DESCRIPTION` file.
 >
-> -   `NAMESPACE` declares the functions your package exports for
+> -   `NAMESPACE` declares the functions your package exports for
 >     external use and the external functions your package imports from
 >     other packages. At this point, it is empty, except for a comment
 >     declaring that this is a file you should not edit by hand.
 >
-> -   The `R/` directory is the "business end" of your package. It will
->     soon contain `.R` files with function definitions.
+> -   The `R/` directory is the "business end" of your package. It will
+>     soon contain `.R` files with function definitions.
 >
-> -   `regexcite.Rproj` is the file that makes this directory an RStudio
+> -   `regexcite.Rproj` is the file that makes this directory an RStudio
 >     Project. Even if you don't use RStudio, this file is harmless. Or
->     you can suppress its creation
->     with `create_package(..., rstudio = FALSE)`.
+>     you can suppress its creation with
+>     `create_package(..., rstudio = FALSE)`.
 
 Note that some of these files that begin with `.` likely won't be
 visible unless you click on the More section of the Files tab in the
@@ -203,45 +204,92 @@ Install tab near the top and install the correct version for your OS.
 Once `git version` returns an actual version number, run the following
 to create a Git repository
 
-```{r eval = FALSE}
+```{r}
+#| eval: false
 use_git()
 ```
 
 If this throws an error about a user.name not being found, that's okay,
-we need to set a name for Git to know us by. See [this
-article](https://docs.github.com/en/get-started/getting-started-with-git/setting-your-username-in-git)
-for more details. Open terminal and enter one of the following depending
-on whether you want to set a name for this repository or for all
-repositories on your computer. This username DOES NOT NEED TO MATCH YOUR
-GITHUB USERNAME.
+we need to set a name for Git to know us by.
 
-For this repository, run the following in the terminal:
+The easiest way to do this is to run the following:
 
-    git config user.name "yournamehere"
+```{r}
+#| eval: false
+use_git_config(user.name = "example name", user.email = "emailhere@example.com")
+```
 
-For all repositories on your computer, run the following in the
-terminal:
-
-    git config --global user.name "yournamehere"
-
-We'll need to do this for user.email too, but THIS EMAIL MUST MATCH ONE
-OF THE ONES ASSOCIATED WITH YOUR GITHUB ACCOUNT.
-
-For this repository, run the following in the terminal:
-
-    git config user.email "youremailhere"
-
-For all repositories on your computer, run the following in the
-terminal:
-
-    git config --global user.email "youremailhere"
+User.name is the name attached to the commits you make, often people use
+their full name or something related to their name so others know who is
+making commits. User.email should be an email account you use with your
+github account.
 
 Then we can run `use_git()` on the R console again to create our git
 repository.
 
 ### Using Git/Github
 
-Commit, Push
+Now that we have our git repository, it's time to connect this to
+github. First, let's run the following:
+
+```{r}
+#| eval: false
+git_sitrep()
+```
+
+This provides us with a lot of the information we need to help connect
+our local git repository to github. We may see that the Personal Access
+Token is missing, we need this to help us connect to our github account.
+If we are logged into github in our preferred browser and we run the
+following, it should take us to a window where we can create one (I'd
+recommend setting it to expire after the class ends and putting
+something in the notes section that states what computer/user this token
+is for:
+
+```{r}
+#| eval: false
+usethis::create_github_token()
+```
+
+Copy the token once it is created, you can't access it again so you'll
+need to regenerate new PATs in the future after it expires. Then run the
+following in the Console and paste in the PAT when it asks for it.
+
+```{r}
+#| eval: false
+gitcreds::gitcreds_set()
+```
+
+Now we'll rerun git_sitrep to see if the PAT is discovered.
+
+If that worked, it's time to try running the following to create a
+github page for our package:
+
+```{r}
+#| eval: false
+use_github()
+```
+
+If this all worked, we should be able to see a new Git tab in the top
+right pane (likely: Environment, History, Connects, Build, and now Git).
+You may need to close and reopen R for this to take effect. When we want
+to commit our changes (sort of like saving the current state of the
+package), we can hit the commit button.
+
+![](images/Screen%20Shot%202024-04-01%20at%209.15.05%20PM.png){width="6.7in"}
+
+This will bring up a new page, where we can check the boxes next to the
+files with changes we want to commit. We don't have to commit changes to
+all files in a particular commit, and we don't want to commit things we
+don't want to send to GitHub (this is where the `.gitignore` file is
+useful). We also need to provide a message describing the changes
+included in the commit, then we can hit the commit button.
+
+![](images/Screen%20Shot%202024-04-01%20at%209.18.50%20PM.png)
+
+Then we can press `Push` to send the commit to GitHub. There's a lot
+more we can do with GitHub, but for our current purposes, this should
+suffice.
 
 ## Adding some stuff to the package
 
