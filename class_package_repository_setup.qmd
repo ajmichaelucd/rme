@@ -287,8 +287,8 @@ included in the commit, then we can hit the commit button.
 
 ![](images/Screen%20Shot%202024-04-01%20at%209.18.50%20PM.png)
 
-Then we can press `Push` to send the commit to GitHub. There's a lot
-more we can do with GitHub, but for our current purposes, this should
+Then we can press `Push` to send the commit to Github. There's a lot
+more we can do with Github, but for our current purposes, this should
 suffice.
 
 ## Adding some stuff to the package
@@ -375,6 +375,22 @@ penguins %>%
   scale_color_colorblind()
 ```
 
+```{r}
+#| label: fig-Penguin-Plot-2
+#| fig-cap: "This is an second example of a caption for the Penguin Plot of Flipper Length and Body Mass by Species"
+#| warning: false
+#| message: false
+penguins %>% 
+  ggplot(aes(x = flipper_length_mm, y = body_mass_g, color = species, shape = species)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs(
+    x = "Flipper length (mm)", y = "Body mass (g)",
+    color = "Species", shape = "Species"
+  ) +
+  scale_color_colorblind()
+```
+
 Now let's look at how we generated the caption for our plot, we did not
 use ggtitle() or labs() because we want Quarto to add the "Figure 1" for
 us.
@@ -451,9 +467,154 @@ $$
 \ell = \sum_{i=1}^{n}{\log{p(l_i,r_i|t_i)}}
 $$ is just:
 
-![](images/Screen%20Shot%202024-04-01%20at%208.41.49%20PM.png){fig-alt="$$ \\ell = \\sum_{i=1}^{n}{\\log{p(l_i,r_i|t_i)}} $$"
-width="3.84in"}
+![](images/Screen%20Shot%202024-04-01%20at%208.41.49%20PM.png)
 
 [Here](https://www.cmor-faculty.rice.edu/~heinken/latex/symbols.pdf) is
 a helpful guide to how to write a lot of different things you might need
 in LaTeX.
+
+### dplyr Basics
+
+"R for Data Science" by @wickham2023r4ds defines several important
+functions for data transformation:
+
+-   filter
+
+-   arrange
+
+-   distinct
+
+-   select
+
+-   mutate
+
+-   rename
+
+-   relocate
+
+#### filter()
+
+filter allows us to keep only rows that meet some criteria, we want the
+thing in the filter command to result in logical (TRUE/FALSE) decisions
+for each observation.
+
+```{r}
+penguins %>% 
+  filter(island == "Torgerson")
+```
+
+Note that I used `==`, this returns a logical outcome.
+
+```{r}
+4 == 2*2
+```
+
+```{r}
+penguins %>% 
+  filter(flipper_length_mm > 190)
+```
+
+```{r}
+penguins %>% 
+  filter(species %in% c("Adelie", "Gentoo"))
+```
+
+#### arrange()
+
+arrange lets us sort rows by some value, it defaults to low-to-high, but
+if we surround the row we want to sort by with desc() we can go
+high-to-low
+
+```{r}
+penguins %>% 
+  arrange(desc(bill_length_mm))
+```
+
+#### distinct
+
+distinct retains only the unique rows, if you only want to do this with
+respect to some variables you can:
+
+```{r}
+penguins %>% 
+  distinct(species, island)
+```
+
+```{r}
+penguins %>% 
+  distinct()
+```
+
+#### mutate()
+
+mutate lets us add new columns, they can even be functions of other
+columns
+
+```{r}
+penguins %>% 
+  mutate(
+    bill_ratio = bill_length_mm / bill_depth_mm,
+    .after = bill_depth_mm
+  )
+```
+
+You'll probably use this one A LOT to modify variables
+
+#### select()
+
+you can use select to specify which variables you want to keep, or to
+remove variables. From R for Data Science, @wickham2023r4ds:
+
+> There are a number of helper functions you can use
+> within [`select()`](https://dplyr.tidyverse.org/reference/select.html):
+>
+> -   `starts_with("abc")`: matches names that begin with \"abc\".
+>
+> -   `ends_with("xyz")`: matches names that end with \"xyz\".
+>
+> -   `contains("ijk")`: matches names that contain \"ijk\".
+>
+> -   `num_range("x", 1:3)`: matches `x1`, `x2` and `x3`.
+
+```{r}
+penguins %>% select(species:bill_length_mm)
+```
+
+```{r}
+penguins %>% select(!species:bill_length_mm)
+```
+
+```{r}
+penguins %>% select(starts_with("bill"))
+```
+
+You can rename variables while selecting also:
+```{r}
+penguins %>% select(new_name = species)
+```
+
+#### rename()
+
+if you don't want to remove all the other columns, run the same thing as above but use rename instead of select
+
+```{r}
+penguins %>% rename(new_name = species)
+```
+
+#### relocate()
+
+use relocate to move variables, by default to the front
+
+```{r}
+penguins %>% 
+  relocate(contains("bill"))
+```
+
+we can add .before or .after along with a column name to specify that we want to move the column(s) to a specific place
+
+```{r}
+penguins %>% 
+  relocate(contains("bill"),
+           .after = species)
+```
+
