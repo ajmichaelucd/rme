@@ -1,0 +1,193 @@
+---
+title: "Sampling Distribution"
+author: "Alec Michael"
+format: html
+editor: visual
+runtime: shiny
+---
+
+```{r}
+#| include: false
+library(tidyverse)
+library(shiny)
+library(purrr)
+```
+
+
+```{r}
+#| echo: false
+numericInput(
+  inputId = "num_samples",
+  label = "How Many Samples",
+  min = 0,
+  max = Inf,
+  step = 1,
+  value = 3000
+)
+numericInput(
+  inputId = "sample_size",
+  label = "Sample Size",
+  min = 0,
+  max = Inf,
+  step = 1,
+  value = 30
+)
+numericInput(
+  inputId = "pop_mean",
+  label = "Population Mean",
+  min = -Inf,
+  max = Inf,
+  step = 0.1,
+  value = 50
+)
+numericInput(
+  inputId = "pop_sd",
+  label = "Population SD",
+  min = 0.1,
+  max = Inf,
+  step = 0.1,
+  value = 10
+)
+
+```
+
+```{r}
+#| echo: false
+get_sample_mean = function(id, sample_size, mean, sd){
+  sample_mean = rnorm(sample_size, mean, sd) |> mean()
+  return(tibble(id = id, sample_mean = sample_mean))
+}
+
+draw_samples = function(sample_size, n_samples, mean, sd){
+  df = purrr::map_df(1:n_samples, ~ get_sample_mean(.x, sample_size, mean, sd)) |> tibble()
+  return(df)
+}
+```
+
+```{r}
+#| echo: false
+sample_size = reactive(input$sample_size)
+num_samples = reactive(input$num_samples)
+pop_mean = reactive(input$pop_mean)
+pop_sd = reactive(input$pop_sd)
+```
+
+```{r}
+#| echo: false
+renderPlot(draw_samples(sample_size(), num_samples(), pop_mean(), pop_sd()) |> 
+  ggplot()+
+  geom_histogram(aes(x = sample_mean, y = after_stat(density)), binwidth = 1, color = "black", fill = "darkorange")+
+    theme_classic() +
+        theme(axis.text = element_text(size =  15)) +
+    geom_vline(xintercept = pop_mean(), color = "green") +
+    geom_function(fun = function(x){dnorm(x, pop_mean(), pop_sd() / sqrt(sample_size()))}, color = "purple")
+  
+  )
+```
+
+Say we want to test a null hypothesis, such as $\mu > 45$ . Under the null hypothesis, $\mu_0 = 45$ and the null distribution would be:
+```{r}
+ggplot() +
+  stat_function(fun = function(x){dnorm(x, 45, 10 / sqrt(30))}, color = "black", linewidth = 0.5, geom = 
+                  "area", fill = "red", alpha = 0.2) +
+  xlim(37, 58) +
+  ylim(0, 0.3) + 
+  geom_vline(xintercept = 45, color = "blue") + 
+  theme_classic()
+```
+
+
+If the null hypothesis is true, the null distribution and the sampling distribution are the same. If we set a significance level of 0.05 (one-sided) in this case, the P(Type I Error) is this area:
+```{r}
+ggplot() +
+  stat_function(fun = function(x){dnorm(x, 45, 10 / sqrt(30))}, color = "black", linewidth = 0.5, geom = 
+                  "area", alpha = 0.2) +
+    stat_function(fun = function(x){dnorm(x, 45, 10 / sqrt(30))}, color = "black", linewidth = 0.5, geom = 
+                  "area", fill = "purple", alpha = 0.2, xlim = c((1.645 * 10 / sqrt(30)) + 45, 60)) +
+  xlim(37, 58) +
+  ylim(0, 0.3) + 
+  geom_vline(xintercept = 45, color = "blue") + 
+  theme_classic()
+```
+
+
+If the true population mean is 50, then the sampling distribution (green) and the null distribution (red) look like:
+```{r}
+ggplot() +
+  stat_function(fun = function(x){dnorm(x, 45, 10 / sqrt(30))}, color = "black", linewidth = 0.5, geom = 
+                  "area", fill = "red", alpha = 0.2) +
+    stat_function(fun = function(x){dnorm(x, 50, 10 / sqrt(30))}, color = "black", linewidth = 0.5, geom = 
+                  "area", fill = "green", alpha = 0.2) +
+  xlim(37, 58) +
+  ylim(0, 0.3) + 
+  geom_vline(xintercept = 45, color = "blue") + 
+  geom_vline(xintercept = 50, color = "orange") + 
+  theme_classic()
+```
+
+Note, we would not actually be able to see the sampling distribution because it represents the unknown truth. If the true population mean is 50, our probability of a Type II Error is:
+```{r}
+ggplot() +
+  stat_function(fun = function(x){dnorm(x, 45, 10 / sqrt(30))}, color = "red", linewidth = 0.5) +
+  stat_function(fun = function(x){dnorm(x, 50, 10 / sqrt(30))}, color = "black", linewidth = 0.5) +
+    stat_function(fun = function(x){dnorm(x, 50, 10 / sqrt(30))}, color = "black", linewidth = 0.5, geom = 
+                  "area", fill = "purple", alpha = 0.2, xlim = c(0, (1.645 * 10 / sqrt(30)) + 45)) +
+  xlim(37, 58) +
+  ylim(0, 0.3) + 
+  geom_vline(xintercept = 45, color = "blue") + 
+  geom_vline(xintercept = 50, color = "orange") + 
+  theme_classic()
+```
+
+So we draw an observation from the sampling distribution (centered around the true mean) and see how unlikely it is to have come from the null distribution, if the observation is very unlikely under the null, then we have evidence the true mean (and thus the sampling distribution) are very different from the null.
+For instance if we take a sample of 30 observations and find a sample mean ($\bar x$) of 51 then it looks like this:
+```{r}
+ggplot() +
+  stat_function(fun = function(x){dnorm(x, 45, 10 / sqrt(30))}, color = "black", linewidth = 0.5, geom = 
+                  "area", fill = "red", alpha = 0.2) +
+    stat_function(fun = function(x){dnorm(x, 50, 10 / sqrt(30))}, color = "black", linewidth = 0.5, geom = 
+                  "area", fill = "green", alpha = 0.2) +
+  xlim(37, 58) +
+  ylim(0, 0.3) + 
+  geom_vline(xintercept = 45, color = "blue") + 
+  geom_vline(xintercept = 50, color = "orange") + 
+  geom_vline(xintercept = 51, color = "purple", linewidth = 1, linetype = 2) +
+  theme_classic()
+```
+Very unlikely to be from the null, so we'd reject the null.
+
+## Confidence Intervals
+We set the width of each side of our confidence intervals to be the standard error times a z-value, 1.96 for 95% confidence levels. We pick this width so that for 95% of possible samples drawn from the sampling distribution, our confidence interval reaches the center of the sampling distribution, which is the population mean.
+
+```{r}
+ggplot() +
+  stat_function(fun = function(x){dnorm(x, 50, 10 / sqrt(30))}, color = "black", linewidth = 0.5, geom = 
+                  "area", fill = "green", alpha = 0.2) +
+  xlim(42, 58) +
+  ylim(0, 0.3) + 
+  geom_vline(xintercept = 50, color = "blue") + 
+  geom_segment(aes(x = (50 - 1.96 * 10/sqrt(30)),xend = (50 + 1.96 * 10/sqrt(30)), y = 0.1 ), color = "orange", size = 1)+
+  theme_classic()
+```
+
+```{r}
+  draw_samples(30, 100, mean = 50, sd = 10) |>
+  mutate(lb = sample_mean - 1.96 * 10/sqrt(30),
+         ub = sample_mean + 1.96 * 10/sqrt(30)) |> mutate(height = seq(0.01, 0.29,length.out = 100)) |> 
+  mutate(
+    Status =
+    case_when(
+    lb > 50 ~ "Does Not Include",
+    ub < 50 ~ "Does Not Include",
+    TRUE ~ "Includes"
+  )) |> 
+ggplot() +
+  stat_function(fun = function(x){dnorm(x, 50, 10 / sqrt(30))}, color = "black", linewidth = 0.5, geom = 
+                  "area", fill = "green", alpha = 0.2) +
+  xlim(40, 60) +
+  ylim(0, 0.3) + 
+  geom_vline(xintercept = 50, color = "blue") + 
+  geom_segment(aes(x = lb,xend = ub, y = height, color = Status), size = 0.2)+
+  geom_point(aes(x = sample_mean, y = height)) +
+  theme_classic()
+```

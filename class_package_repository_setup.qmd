@@ -565,14 +565,14 @@ You'll probably use this one A LOT to modify variables
 you can use select to specify which variables you want to keep, or to
 remove variables. From R for Data Science, @wickham2023r4ds:
 
-> There are a number of helper functions you can use
-> within [`select()`](https://dplyr.tidyverse.org/reference/select.html):
+> There are a number of helper functions you can use within
+> [`select()`](https://dplyr.tidyverse.org/reference/select.html):
 >
-> -   `starts_with("abc")`: matches names that begin with \"abc\".
+> -   `starts_with("abc")`: matches names that begin with "abc".
 >
-> -   `ends_with("xyz")`: matches names that end with \"xyz\".
+> -   `ends_with("xyz")`: matches names that end with "xyz".
 >
-> -   `contains("ijk")`: matches names that contain \"ijk\".
+> -   `contains("ijk")`: matches names that contain "ijk".
 >
 > -   `num_range("x", 1:3)`: matches `x1`, `x2` and `x3`.
 
@@ -589,13 +589,15 @@ penguins %>% select(starts_with("bill"))
 ```
 
 You can rename variables while selecting also:
+
 ```{r}
 penguins %>% select(new_name = species)
 ```
 
 #### rename()
 
-if you don't want to remove all the other columns, run the same thing as above but use rename instead of select
+if you don't want to remove all the other columns, run the same thing as
+above but use rename instead of select
 
 ```{r}
 penguins %>% rename(new_name = species)
@@ -610,11 +612,11 @@ penguins %>%
   relocate(contains("bill"))
 ```
 
-we can add .before or .after along with a column name to specify that we want to move the column(s) to a specific place
+we can add .before or .after along with a column name to specify that we
+want to move the column(s) to a specific place
 
 ```{r}
 penguins %>% 
   relocate(contains("bill"),
            .after = species)
 ```
-
