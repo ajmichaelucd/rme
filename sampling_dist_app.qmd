@@ -4,6 +4,10 @@ author: "Alec Michael"
 format: html
 editor: visual
 runtime: shiny
+server: shiny
+execute:
+  cache: true
+  freeze: auto
 ---
 
 ```{r}
@@ -12,10 +16,12 @@ library(tidyverse)
 library(shiny)
 library(purrr)
 ```
-
+If we have a normally distributed population with a mean and sd selected below and we draw samples of some size, we create a distribution of the estimator, here the sample means. This sampling distribution represents a distribution of all the sample means we could have gotten sampling from the population. Note that the sampling distribution follows a distribution: $N(\mu, SE)$
 
 ```{r}
 #| echo: false
+fluidRow(
+column(3,
 numericInput(
   inputId = "num_samples",
   label = "How Many Samples",
@@ -23,7 +29,8 @@ numericInput(
   max = Inf,
   step = 1,
   value = 3000
-)
+)),
+column(3,
 numericInput(
   inputId = "sample_size",
   label = "Sample Size",
@@ -31,7 +38,8 @@ numericInput(
   max = Inf,
   step = 1,
   value = 30
-)
+)),
+column(3,
 numericInput(
   inputId = "pop_mean",
   label = "Population Mean",
@@ -39,7 +47,8 @@ numericInput(
   max = Inf,
   step = 0.1,
   value = 50
-)
+)),
+column(3,
 numericInput(
   inputId = "pop_sd",
   label = "Population SD",
@@ -47,7 +56,7 @@ numericInput(
   max = Inf,
   step = 0.1,
   value = 10
-)
+)))
 
 ```
 
@@ -74,15 +83,64 @@ pop_sd = reactive(input$pop_sd)
 
 ```{r}
 #| echo: false
-renderPlot(draw_samples(sample_size(), num_samples(), pop_mean(), pop_sd()) |> 
+df = reactive(draw_samples(sample_size(), num_samples(), pop_mean(), pop_sd()))
+```
+
+
+```{r}
+#| echo: false
+#| eval: false
+renderPlot(df() |> 
   ggplot()+
   geom_histogram(aes(x = sample_mean, y = after_stat(density)), binwidth = 1, color = "black", fill = "darkorange")+
     theme_classic() +
         theme(axis.text = element_text(size =  15)) +
     geom_vline(xintercept = pop_mean(), color = "green") +
-    geom_function(fun = function(x){dnorm(x, pop_mean(), pop_sd() / sqrt(sample_size()))}, color = "purple")
+    geom_function(fun = function(x){dnorm(x, pop_mean(), pop_sd() / sqrt(sample_size()))}, color = "purple")+ xlim(42,58)
   
   )
+```
+
+```{r}
+#| echo: false
+#| eval: false
+renderPlot(df() |> 
+             mutate(distance = abs(pop_mean() - sample_mean)) |> 
+             ggplot() +
+             geom_point(aes(x = sample_mean, y = id, color = distance))  + 
+             scale_color_continuous(type = "viridis")+
+    theme_classic() +
+        theme(axis.text = element_text(size =  15)) +
+    geom_vline(xintercept = pop_mean(), color = "green")
+            + xlim(42,58) +
+      guides(color = FALSE)
+
+)
+```
+
+```{r}
+#| echo: false
+library(patchwork)
+a = reactive(df() |> 
+             mutate(distance = abs(pop_mean() - sample_mean)) |> 
+             ggplot() +
+             geom_point(aes(x = sample_mean, y = id, color = distance))  + 
+             scale_color_continuous(type = "viridis")+
+    theme_classic() +
+        theme(axis.text = element_text(size =  15)) +
+    geom_vline(xintercept = pop_mean(), color = "green")
+            + xlim(42,58) +
+      guides(color = FALSE)
+    )
+b = reactive(df() |> 
+  ggplot()+
+  geom_histogram(aes(x = sample_mean, y = after_stat(density)), binwidth = 1, color = "black", fill = "darkorange")+
+    theme_classic() +
+        theme(axis.text = element_text(size =  15)) +
+    geom_vline(xintercept = pop_mean(), color = "green") +
+    geom_function(fun = function(x){dnorm(x, pop_mean(), pop_sd() / sqrt(sample_size()))}, color = "purple")+ xlim(42,58))
+  
+renderPlot(b()|a())
 ```
 
 Say we want to test a null hypothesis, such as $\mu > 45$ . Under the null hypothesis, $\mu_0 = 45$ and the null distribution would be:

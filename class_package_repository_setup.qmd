@@ -6,6 +6,11 @@ format:
     number-sections: true
     fig-cap-location: top
     tbl-cap-location: top
+  pdf:
+    toc: true
+    number-sections: true
+    fig-cap-location: top
+    tbl-cap-location: top
   revealjs:
     number-sections: true
     auto-stretch: true
@@ -135,6 +140,30 @@ this in the top right corner, where you can switch between various
 projects and packages you are working on.
 
 ![](images/Screen%20Shot%202024-03-26%20at%2012.45.15%20AM%20copy.png)
+
+## RTools
+
+If you have a laptop running windows, let's check if RTools is
+installed:
+
+```{r}
+#| eval: false
+pkgbuild::has_rtools()
+pkgbuild::check_rtools()
+```
+
+If this is false, we need to install that. Just search "install RTools"
+and look for this site:
+<https://cran.r-project.org/bin/windows/Rtools/>. Use the defaults for
+the installation.
+
+You want the one that corresponds to your version of R, which we can
+check with:
+
+```{r}
+#| eval: false
+pkgbuild::rtools_needed()
+```
 
 ## What's In an R Package
 
