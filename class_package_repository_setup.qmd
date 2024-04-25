@@ -119,6 +119,8 @@ library(roxygen2)
 use_devtools()
 ```
 
+Paste the thing that pops up into the .RProfile page that pops up and save it.
+
 And we'll use this to create a new package named epi204. You can name
 the package something a bit different if you would like
 
@@ -316,13 +318,27 @@ included in the commit, then we can hit the commit button.
 
 ![](images/Screen%20Shot%202024-04-01%20at%209.18.50%20PM.png)
 
-Then we can press `Push` to send the commit to Github. There's a lot
-more we can do with Github, but for our current purposes, this should
+Then we can press `Push` to send the commit to GitHub. There's a lot
+more we can do with GitHub, but for our current purposes, this should
 suffice.
+
+Not a bad time to mention that there is a GitHub desktop app and a mobile app. I've only used the desktop one a bit but it does seem helpful!
 
 ## Adding some stuff to the package
 
+
+
+`tinytex::install_tinytex()` to get LaTeX if you don't have it
+
 ### Quarto
+
+type text
+
+```{r}
+
+print("hello")
+```
+
 
 From the menu bar use File\>New File\>Quarto Document. Name the file
 something like: `hw0.qmd` or `test.qmd`.
@@ -422,7 +438,7 @@ penguins %>%
 
 Now let's look at how we generated the caption for our plot, we did not
 use ggtitle() or labs() because we want Quarto to add the "Figure 1" for
-us.
+us. @fig-Penguin-Plot-2
 
 ![](images/Screen%20Shot%202024-03-31%20at%209.18.35%20AM-01.png)
 
@@ -496,6 +512,9 @@ $$
 \ell = \sum_{i=1}^{n}{\log{p(l_i,r_i|t_i)}}
 $$ is just:
 
+$$
+\hat{\theta, \mu}
+$$
 ![](images/Screen%20Shot%202024-04-01%20at%208.41.49%20PM.png)
 
 [Here](https://www.cmor-faculty.rice.edu/~heinken/latex/symbols.pdf) is
@@ -649,3 +668,5 @@ penguins %>%
   relocate(contains("bill"),
            .after = species)
 ```
+
+

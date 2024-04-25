@@ -1,17 +1,17 @@
 ---
 title: "Sampling Distribution"
 author: "Alec Michael"
-format: html
+format: 
+  html:
+    toc: true
 editor: visual
 runtime: shiny
-server: shiny
 execute:
   cache: true
   freeze: auto
 ---
 
 ```{r}
-#| include: false
 library(tidyverse)
 library(shiny)
 library(purrr)
@@ -120,6 +120,7 @@ renderPlot(df() |>
 
 ```{r}
 #| echo: false
+#| cache: false
 library(patchwork)
 a = reactive(df() |> 
              mutate(distance = abs(pop_mean() - sample_mean)) |> 
