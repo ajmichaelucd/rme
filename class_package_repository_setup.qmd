@@ -119,7 +119,8 @@ library(roxygen2)
 use_devtools()
 ```
 
-Paste the thing that pops up into the .RProfile page that pops up and save it.
+Paste the thing that pops up into the .RProfile page that pops up and
+save it.
 
 And we'll use this to create a new package named epi204. You can name
 the package something a bit different if you would like
@@ -322,11 +323,11 @@ Then we can press `Push` to send the commit to GitHub. There's a lot
 more we can do with GitHub, but for our current purposes, this should
 suffice.
 
-Not a bad time to mention that there is a GitHub desktop app and a mobile app. I've only used the desktop one a bit but it does seem helpful!
+Not a bad time to mention that there is a GitHub desktop app and a
+mobile app. I've only used the desktop one a bit but it does seem
+helpful!
 
 ## Adding some stuff to the package
-
-
 
 `tinytex::install_tinytex()` to get LaTeX if you don't have it
 
@@ -338,7 +339,6 @@ type text
 
 print("hello")
 ```
-
 
 From the menu bar use File\>New File\>Quarto Document. Name the file
 something like: `hw0.qmd` or `test.qmd`.
@@ -514,12 +514,26 @@ $$ is just:
 
 $$
 \hat{\theta, \mu}
-$$
-![](images/Screen%20Shot%202024-04-01%20at%208.41.49%20PM.png)
+$$ ![](images/Screen%20Shot%202024-04-01%20at%208.41.49%20PM.png)
 
 [Here](https://www.cmor-faculty.rice.edu/~heinken/latex/symbols.pdf) is
 a helpful guide to how to write a lot of different things you might need
 in LaTeX.
+
+To align text, use:
+
+```{=tex}
+\begin{aligned}
+\text{OR} &= \frac{1}{10}\\
+&= 0.1\\
+\end{aligned}
+```
+$$
+\begin{aligned}
+\text{OR} &= \frac{1}{10}\\
+&= 0.1\\
+\end{aligned}
+$$ Most symbols you'll need are just \thing so $\beta$ is \beta
 
 ### dplyr Basics
 
@@ -668,5 +682,3 @@ penguins %>%
   relocate(contains("bill"),
            .after = species)
 ```
-
-
