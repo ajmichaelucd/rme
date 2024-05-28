@@ -1,0 +1,73 @@
+# Introduction to GAMs
+
+{{< include shared-config.qmd >}}
+
+::: {.content-hidden when-format="revealjs"}
+### Configuring R {.unnumbered}
+
+Functions from these packages will be used throughout this document:
+
+```{r packages, message = FALSE}
+library(mgcv) #one of the primary packages used for GAMs
+library(conflicted) #helps resolve conflicts between multiple packages
+library(MASS) #has the motorcycle data
+library(ggplot2)
+```
+
+Here are some R settings I use in this document:
+
+```{r options, message=FALSE}
+rm(list = ls()) # delete any data that's already loaded into R
+knitr::opts_chunk$set(message = FALSE)
+pander::panderOptions("table.emphasize.rownames", FALSE)
+pander::panderOptions("table.split.table", Inf)
+conflicts_prefer(dplyr::filter) # use the `filter()` function from dplyr() by default
+options('digits' = 4)
+```
+:::
+
+## Similarities to GLMs
+
+This section relies heavily on "Generalized Additive Models: An
+Introduction with R" @wood2017generalized
+
+A generalized additive model is an extension of the generalized linear models we previously discussed in this course, with the addition of smooth functions of covariates to the linear predictor.
+
+$$
+g(\mu_i)=\mathbf{X_i\beta}+f_1(x_{1i})+f_2({x_{2i},x_{3i}})+...
+$$
+
+$\mathbf{X}$ is the model matrix and $\mathbf{X_i}$ is a single row of the model matrix corresponding to observation i.
+$\mathbf{\beta}$ is the vector of model parameters, $g()$ is the link function, and $\mu_i = \text{E}[Y_i]$.
+$f_j$ are smooth functions of the covariates $x_k$.  
+
+When we use these smooth functions, we are able to much more flexibly express the relationship between $x_k$ and $y$ without relying on large numbers of polynomial terms or similarly oversized models. Instead, we just need to define $f_j$ and then tune their smoothness.
+
+Each $f_j$ has to have a basis, which can be represented as the sum of basis functions:
+
+$$
+f(x) = \sum_{g=1}^{h}b_g(x)\beta_g
+$$
+
+Say we wanted $f(x)$ to be a smooth term with a polynomial basis with degree 5:
+
+$$
+f(x) = \beta_1+x\beta_2 + x^2\beta_3+x^3\beta_4+x^4\beta_5+x^5\beta_6
+$$
+
+Why don't we just use polynomial terms for any smooth modeling we need to do? Polynomials tend to oscillate too much, they're pretty good at estimating behavior at a single point, but struggle more when we're interested in general shape of a trend or effect because they tend to exaggerate the ups and downs at some points and lack flexibility at others..
+
+```{r}
+mcycle |> 
+  ggplot() +
+  geom_point(aes(x = times, y = accel))
+```
+
+```{r}
+poly_model = lm(accel~poly(times, degree = 5), data = mcycle)
+mcycle |> 
+  ggplot() +
+  geom_point(aes(x = times, y = accel)) +
+  geom_function(fun = function(times){predict(poly_model, newdata = data.frame(times = times))})
+```
+
