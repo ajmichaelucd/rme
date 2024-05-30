@@ -12,6 +12,7 @@ library(mgcv) #one of the primary packages used for GAMs
 library(conflicted) #helps resolve conflicts between multiple packages
 library(MASS) #has the motorcycle data
 library(ggplot2)
+library(dplyr)
 ```
 
 Here are some R settings I use in this document:
@@ -29,33 +30,48 @@ options('digits' = 4)
 ## Similarities to GLMs
 
 This section relies heavily on "Generalized Additive Models: An
-Introduction with R" @wood2017generalized
+Introduction with R" @wood2017generalized. I highly recommend reading
+this if you're interested in learning more about GAMs
 
-A generalized additive model is an extension of the generalized linear models we previously discussed in this course, with the addition of smooth functions of covariates to the linear predictor.
+A generalized additive model is an extension of the generalized linear
+models we previously discussed in this course, with the addition of
+smooth functions of covariates to the linear predictor.
 
 $$
 g(\mu_i)=\mathbf{X_i\beta}+f_1(x_{1i})+f_2({x_{2i},x_{3i}})+...
 $$
 
-$\mathbf{X}$ is the model matrix and $\mathbf{X_i}$ is a single row of the model matrix corresponding to observation i.
-$\mathbf{\beta}$ is the vector of model parameters, $g()$ is the link function, and $\mu_i = \text{E}[Y_i]$.
-$f_j$ are smooth functions of the covariates $x_k$.  
+$\mathbf{X}$ is the model matrix and $\mathbf{X_i}$ is a single row of
+the model matrix corresponding to observation i. $\mathbf{\beta}$ is the
+vector of model parameters, $g()$ is the link function, and
+$\mu_i = \text{E}[Y_i]$. $f_j$ are smooth functions of the covariates
+$x_k$.
 
-When we use these smooth functions, we are able to much more flexibly express the relationship between $x_k$ and $y$ without relying on large numbers of polynomial terms or similarly oversized models. Instead, we just need to define $f_j$ and then tune their smoothness.
+When we use these smooth functions, we are able to much more flexibly
+express the relationship between $x_k$ and $y$ without relying on large
+numbers of polynomial terms or similarly oversized models. Instead, we
+just need to define $f_j$ and then tune their smoothness.
 
-Each $f_j$ has to have a basis, which can be represented as the sum of basis functions:
+Each $f_j$ has to have a basis, which can be represented as the sum of
+basis functions:
 
 $$
 f(x) = \sum_{g=1}^{h}b_g(x)\beta_g
 $$
 
-Say we wanted $f(x)$ to be a smooth term with a polynomial basis with degree 5:
+Say we wanted $f(x)$ to be a smooth term with a polynomial basis with
+degree 5:
 
 $$
 f(x) = \beta_1+x\beta_2 + x^2\beta_3+x^3\beta_4+x^4\beta_5+x^5\beta_6
 $$
 
-Why don't we just use polynomial terms for any smooth modeling we need to do? Polynomials tend to oscillate too much, they're pretty good at estimating behavior at a single point, but struggle more when we're interested in general shape of a trend or effect because they tend to exaggerate the ups and downs at some points and lack flexibility at others..
+Why don't we just use polynomial terms for any smooth modeling we need
+to do? Polynomials tend to oscillate too much, they're pretty good at
+estimating behavior at a single point, but struggle more when we're
+interested in general shape of a trend or effect because they tend to
+exaggerate the ups and downs at some points and lack flexibility at
+others..
 
 ```{r}
 mcycle |> 
@@ -71,3 +87,136 @@ mcycle |>
   geom_function(fun = function(times){predict(poly_model, newdata = data.frame(times = times))})
 ```
 
+So we need other basis options: Let's start with the piecewise linear
+function before we get into splines:
+
+```{r}
+tf <- function(x,xj,j) {
+## generate jth tent function from set defined by knots xj
+dj <- xj*0;dj[j] <- 1
+approx(xj,dj,x)$y
+} #this is b_j(x)
+
+tf.X <- function(x,xj) {
+## tent function basis matrix given data x
+## and knot sequence xj
+nk <- length(xj); n <- length(x)
+X <- matrix(NA,n,nk)
+for(j in 1:nk) X[,j] <- tf(x,xj,j)
+return(X)
+} #function that takes x and knots to fit pw linear func
+
+attach(mcycle)
+sj <- seq(min(times),max(times),length=8) ## generate knots
+X <- tf.X(times,sj) ## get model matrix
+b <- lm(accel ~ X - 1) ## fit model
+s <- seq(min(times),max(times),length=200)## prediction data
+Xp <- tf.X(s,sj) ## prediction matrix
+fit = tibble(s, y1 = Xp %*% coef(b))
+mcycle |> 
+  ggplot() +
+  geom_point(aes(x = times, y = accel)) +
+  geom_line(aes(x = s, y = y1), data = fit)
+
+```
+
+The problem is, we just picked a random number to be the number of
+knots, k, which in this instance dictates our smoothness. Now we need to
+talk about the idea of tuning smoothness. Too smooth can be overfit and
+needlessly complex, not smooth enough can miss some important patterns
+in the data.
+
+```{r}
+model_gam_3 = gam(accel~s(times, bs = "cr", k = 3), data = mcycle)
+model_gam_10 = gam(accel~s(times, bs = "cr", k = 10), data = mcycle)
+model_gam_6 = gam(accel~s(times, bs = "cr", k = 6), data = mcycle)
+mcycle |> 
+  ggplot() +
+  geom_point(aes(x = times, y = accel)) +
+  geom_function(fun = function(times){predict(model_gam_3, newdata = data.frame(times = times))}, color = "red") +
+  geom_function(fun = function(times){predict(model_gam_10, newdata = data.frame(times = times))}, color = "blue") +
+  geom_function(fun = function(times){predict(model_gam_6, newdata = data.frame(times = times))}, color = "violet")
+```
+
+##GAMs and Smoothers
+
+The trick is that we actually fix k to be some number of knots that is a
+bit larger than we actually need, then we do the actual tuning of the
+smoothness by adding a penalty term to the model fitting. The penalty
+affects how large the $\beta_g$ terms are, a large penalty forces the
+values of $\beta_g$ to be small, making a smoother (flatter) curve.
+
+$$
+f(x) = \sum_{g=1}^{h}b_g(x)\beta_g
+$$
+
+### Smoothing Splines
+
+Smoothing splines have a knot at every x value, the amount of smoothing
+then depends on lambda. \#### Natural Cubic Splines A natural cubic
+spline interpolates between points in a data set where for $i = 1,...,n$
+$x_i > x_{i-1}$
+
+#### Cubic Smoothing Splines
+
+Cubic smoothing splines place a knot at every value of $x$, then
+minimize: 
+$$
+\sum_{i=1}^n [y_i-f(x_i)]^2 + \lambda \int f''(x)^2dx
+$$
+
+The second term is the penalty, which is larger for higher values of the
+second derivative (positive or negative), in this way, the model is
+penalized for having more bends. Larger values of lambda encourage a
+more linear fit (more smooth), while smaller values result in "bendier"
+fits.
+
+### Penalized Splines
+
+Penalized splines are a similar but more computationally efficient
+approach than smoothing splines. They set up a spline basis for a subset
+of the covariate values (fewer knots), then use that basis to fit a
+model for the entire set of data points. \#### Cubic Penalized
+Regression Splines (aka Cubic Regression Splines)
+
+```{r}
+model_gam_cr = gam(accel~s(times, bs = "cr"), data = mcycle)
+
+mcycle |> 
+  ggplot() +
+  geom_point(aes(x = times, y = accel)) +
+  geom_function(fun = function(times){predict(model_gam_cr, newdata = data.frame(times = times))}, color = "purple") +theme_bw()
+```
+
+Similar to the cubic smoothing spline except it is fit to fewer knots.
+
+#### B-Spline Basis
+
+The B-spline basis is an improvement to spline theory that mostly means
+that the basis functions for a split have support over $r + 2$ knots,
+where $r$ is the order of the function (in cubic splines, $r = 3$).
+
+#### P-Splines
+
+Built on the B-spline basis, P-splines are a penalized spline that
+typically use evenly-spaced knots and directly penalize the values of
+$\beta_i$ in the basis functions using a difference penalty. This means
+larger penalties for larger differences between adjacent $\beta_i$'s.
+
+![](images/psplines.PNG)
+
+```{r}
+model_gam_ps = gam(accel~ s(times,bs="ps",m=c(2,2)), data = mcycle)
+model_gam_ps2 = gam(accel~ s(times,bs="ps",m=c(2,1)), data = mcycle)
+
+mcycle |> 
+  ggplot() +
+  geom_point(aes(x = times, y = accel)) +
+  geom_function(fun = function(times){predict(model_gam_ps, newdata = data.frame(times = times))}, color = "purple") +
+  geom_function(fun = function(times){predict(model_gam_ps2, newdata = data.frame(times = times))}, color = "yellow") +
+  theme_bw()
+```
+
+Thin Plate Regression
+
+GCV to choose penalty
