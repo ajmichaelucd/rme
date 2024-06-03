@@ -207,7 +207,7 @@ larger penalties for larger differences between adjacent $\beta_i$'s.
 
 ```{r}
 model_gam_ps = gam(accel~ s(times,bs="ps",m=c(2,2)), data = mcycle)
-model_gam_ps2 = gam(accel~ s(times,bs="ps",m=c(2,1)), data = mcycle)
+model_gam_ps2 = gam(accel~ s(times,bs="ps",m=c(6,6)), data = mcycle)
 
 mcycle |> 
   ggplot() +
@@ -217,6 +217,8 @@ mcycle |>
   theme_bw()
 ```
 
-Thin Plate Regression
+### A few notes
 
-GCV to choose penalty
+Thin Plate Regression is the default for the s() function in mgcv. I'm less familiar with this approach but it does accept multiple covariates in one smoother.
+
+Generalized Cross Validation (an approximation to leave-one-out-CV) to choose penalty because it gives an approximately unbiased estimate of prediction error. The details of how it is 
